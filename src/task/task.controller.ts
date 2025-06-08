@@ -8,10 +8,11 @@ import {
   Delete,
 } from '@nestjs/common';
 import { TaskService } from './task.service';
-import { CreateTaskDto } from './dto/create-task.dto';
-import { UpdateTaskDto } from './dto/update-task.dto';
+import { CreateTaskDto, UpdateTaskDto, TaskFiltersDto } from './dto';
 import { Auth } from '@/auth/decorators/auth.decorator';
 import { ValidRoles } from '@/auth/interfaces/valid-roles.interface';
+import { PaginationDto } from '@/common/dto/pagination.dto';
+import { Query } from '@nestjs/common';
 
 @Controller('task')
 @Auth()
@@ -25,8 +26,14 @@ export class TaskController {
   }
 
   @Get()
-  findAll() {
-    return this.taskService.findAll();
+  findAll(@Query() pagination: PaginationDto) {
+    // Convertir el objeto de filtros a un objeto JavaScript si es necesario
+    let filters: TaskFiltersDto = {};
+    if (pagination.filters && typeof pagination.filters === 'string') {
+      const tempFilter = pagination.filters as unknown as string;
+      filters = JSON.parse(tempFilter) as TaskFiltersDto;
+    }
+    return this.taskService.findAll(pagination, filters);
   }
 
   @Get('find/:id')

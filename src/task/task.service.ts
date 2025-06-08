@@ -12,12 +12,15 @@ import { User } from '../users/entities/user.entity';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { AssignTaskDto } from './dto/assign-task.dto';
 import { CreateTaskDto } from './dto/create-task.dto';
+import { AdvancedSearchService } from '@/common/services/advanced-search.service';
+import { PaginationDto } from '@/common/dto/pagination.dto';
 
 @Injectable()
 export class TaskService {
   constructor(
     @InjectRepository(Task)
     private readonly taskRepo: Repository<Task>,
+    private readonly advancedSearchService: AdvancedSearchService,
 
     @InjectRepository(Project)
     private readonly projectRepo: Repository<Project>,
@@ -120,9 +123,15 @@ export class TaskService {
     }
   }
 
-  async findAll(): Promise<Task[]> {
+  async findAll(pagination: PaginationDto, filters: any) {
     try {
-      return await this.taskRepo.find();
+      return this.advancedSearchService.search(
+        this.taskRepo,
+        pagination,
+        filters,
+        ['title', 'description'],
+        false,
+      );
     } catch (error) {
       console.error(error);
       throw new InternalServerErrorException('Error fetching tasks');
@@ -164,11 +173,27 @@ export class TaskService {
 
   async remove(id: string): Promise<void> {
     try {
-      const result = await this.taskRepo.delete(id);
-      if (result.affected === 0) throw new NotFoundException('Task not found');
+      const task = await this.taskRepo.findOne({ where: { id } });
+      if (!task) {
+        throw new NotFoundException('Task not found');
+      }
+      await this.taskRepo.softDelete(id);
     } catch (error) {
       console.error(error);
       throw new InternalServerErrorException('Error deleting task');
+    }
+  }
+
+  async restore(id: string): Promise<void> {
+    try {
+      const task = await this.taskRepo.findOne({ where: { id } });
+      if (!task) {
+        throw new NotFoundException('Task not found');
+      }
+      await this.taskRepo.restore(id);
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException('Error restoring task');
     }
   }
 }

@@ -6,12 +6,13 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { ProjectService } from './project.service';
-import { CreateProjectDto } from './dto/create-project.dto';
-import { UpdateProjectDto } from './dto/update-project.dto';
+import { CreateProjectDto, ProjectFiltersDto, UpdateProjectDto } from './dto';
 import { Auth } from '@/auth/decorators/auth.decorator';
 import { ValidRoles } from '@/auth/interfaces/valid-roles.interface';
+import { PaginationDto } from '@/common/dto/pagination.dto';
 
 @Controller('projects')
 @Auth()
@@ -25,8 +26,14 @@ export class ProjectController {
   }
 
   @Get()
-  findAll() {
-    return this.projectService.findAll();
+  findAll(@Query() pagination: PaginationDto) {
+    // Convertir el objeto de filtros a un objeto JavaScript si es necesario
+    let filters: ProjectFiltersDto = {};
+    if (pagination.filters && typeof pagination.filters === 'string') {
+      const tempFilter = pagination.filters as unknown as string;
+      filters = JSON.parse(tempFilter) as ProjectFiltersDto;
+    }
+    return this.projectService.findAll(pagination, filters);
   }
 
   @Get('/find/:id')

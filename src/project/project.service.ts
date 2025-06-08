@@ -11,12 +11,15 @@ import { Project } from './entities/project.entity';
 import { User } from '../users/entities/user.entity';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
+import { AdvancedSearchService } from '@/common/services/advanced-search.service';
+import { PaginationDto } from '@/common/dto/pagination.dto';
 
 @Injectable()
 export class ProjectService {
   constructor(
     @InjectRepository(Project)
     private readonly projectRepository: Repository<Project>,
+    private readonly advancedSearchService: AdvancedSearchService,
 
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
@@ -54,9 +57,15 @@ export class ProjectService {
     }
   }
 
-  async findAll() {
+  async findAll(pagination: PaginationDto, filters: any) {
     try {
-      return await this.projectRepository.find();
+      return this.advancedSearchService.search(
+        this.projectRepository,
+        pagination,
+        filters,
+        ['name', 'description'],
+        false,
+      );
     } catch (error) {
       console.error(error);
       throw new InternalServerErrorException(error);
@@ -95,7 +104,25 @@ export class ProjectService {
 
   async remove(id: string) {
     try {
-      await this.projectRepository.delete(id);
+      const project = await this.projectRepository.findOne({ where: { id } });
+      if (!project) {
+        throw new NotFoundException(`Project with id ${id} not found`);
+      }
+      await this.projectRepository.softDelete(id);
+      return true;
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  async restore(id: string) {
+    try {
+      const project = await this.projectRepository.findOne({ where: { id } });
+      if (!project) {
+        throw new NotFoundException(`Project with id ${id} not found`);
+      }
+      await this.projectRepository.restore(id);
       return true;
     } catch (error) {
       console.error(error);

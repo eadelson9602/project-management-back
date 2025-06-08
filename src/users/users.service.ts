@@ -8,6 +8,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
+import { hashPassword } from './helpers/bcrypt.helper';
 
 @Injectable()
 export class UsersService {
@@ -18,7 +19,12 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto) {
     try {
-      const user = this.userRepository.create(createUserDto);
+      const passwordEncrypt: string = hashPassword(createUserDto.password);
+
+      const user: Partial<User> = this.userRepository.create({
+        ...createUserDto,
+        password: passwordEncrypt,
+      });
       await this.userRepository.save(user);
       return user;
     } catch (error) {
@@ -52,6 +58,9 @@ export class UsersService {
       });
       if (!user) {
         throw new NotFoundException('User not found');
+      }
+      if (updateUserDto.password) {
+        updateUserDto.password = hashPassword(updateUserDto.password);
       }
       await this.userRepository.update(updateUserDto.id, updateUserDto);
       return await this.userRepository.findOne({

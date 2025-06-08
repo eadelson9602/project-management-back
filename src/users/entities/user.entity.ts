@@ -4,6 +4,8 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   OneToMany,
+  BeforeInsert,
+  BeforeUpdate,
 } from 'typeorm';
 import { Project } from '../../project/entities/project.entity';
 import { Task } from '../../task/entities/task.entity';
@@ -19,7 +21,7 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  @Column()
+  @Column({ select: false })
   password: string;
 
   @Column({ type: 'enum', enum: ['admin', 'manager', 'developer'] })
@@ -39,4 +41,14 @@ export class User {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @BeforeInsert()
+  checkFieldstoInsert() {
+    this.email = this.email.toLowerCase().trim();
+  }
+
+  @BeforeUpdate()
+  checkFieldsToUpdate() {
+    this.email = this.email.toLowerCase().trim();
+  }
 }

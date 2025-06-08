@@ -22,7 +22,7 @@ export class CreateUserDto {
 
   @IsString()
   @MinLength(8)
-  @MaxLength(16)
+  @MaxLength(100)
   @IsString()
   @Matches(/(?:(?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
     message:

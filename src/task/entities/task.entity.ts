@@ -44,11 +44,8 @@ export class Task {
 
   // Relación con el desarrollador asignado
   @ManyToOne(() => User, { eager: true })
-  @JoinColumn({ name: 'assignedTo' })
+  @JoinColumn({ name: 'assignedToId' })
   assignedTo: User;
-
-  @Column('uuid')
-  assignedToId: string;
 
   @CreateDateColumn()
   createdAt: Date;

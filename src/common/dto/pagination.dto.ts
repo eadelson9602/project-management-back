@@ -7,14 +7,12 @@ export enum SortOrder {
 
 export class PaginationDto {
   @IsInt()
-  @IsOptional()
   @Min(1)
-  page?: number;
+  page: number = 1;
 
   @IsInt()
-  @IsOptional()
   @Min(1)
-  limit?: number;
+  limit: number = 10;
 
   @IsOptional()
   search?: string;

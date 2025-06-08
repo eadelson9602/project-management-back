@@ -10,15 +10,17 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { hashPassword } from './helpers/bcrypt.helper';
-import { PaginationQueryDto } from './dto/pagination-query.dto';
+import { PaginationDto } from '@/common/dto/pagination.dto';
 import { UserFiltersDto } from './dto/user-filters.dto';
 import { Not, IsNull } from 'typeorm';
+import { AdvancedSearchService } from '@/common/services/advanced-search.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly advancedSearchService: AdvancedSearchService,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -37,152 +39,31 @@ export class UsersService {
     }
   }
 
-  async findAll(
-    filters: Partial<UserFiltersDto>,
-    pagination: PaginationQueryDto,
-  ) {
+  async findAll(pagination: PaginationDto, filters: UserFiltersDto) {
     try {
-      const queryBuilder = this.userRepository.createQueryBuilder('user');
-      queryBuilder.where({ deletedAt: IsNull() });
-
-      // Filtros
-      if (pagination.search) {
-        queryBuilder.andWhere('user.email ILIKE :search', {
-          search: `%${pagination.search}%`,
-        });
-      }
-
-      if (filters) {
-        const data = filters as unknown;
-        const optionsFilters = JSON.parse(data as string) as UserFiltersDto;
-
-        if (optionsFilters.email) {
-          queryBuilder.andWhere('user.email = :email', {
-            email: optionsFilters.email,
-          });
-        }
-        if (optionsFilters.name) {
-          queryBuilder.andWhere('user.name = :name', {
-            name: optionsFilters.name,
-          });
-        }
-        if (optionsFilters.role) {
-          queryBuilder.andWhere('user.role = :role', {
-            role: optionsFilters.role,
-          });
-        }
-        if (optionsFilters.isActive !== undefined) {
-          queryBuilder.andWhere('user.isActive = :isActive', {
-            isActive: optionsFilters.isActive,
-          });
-        }
-        if (optionsFilters.createdAt) {
-          queryBuilder.andWhere('user.createdAt = :createdAt', {
-            createdAt: optionsFilters.createdAt,
-          });
-        }
-        if (optionsFilters.updatedAt) {
-          queryBuilder.andWhere('user.updatedAt = :updatedAt', {
-            updatedAt: optionsFilters.updatedAt,
-          });
-        }
-        if (optionsFilters.deletedAt) {
-          queryBuilder.andWhere('user.deletedAt = :deletedAt', {
-            deletedAt: optionsFilters.deletedAt,
-          });
-        }
-      }
-
-      // Ordenamiento
-      if (pagination.sortField && pagination.sortOrder) {
-        const validFields = ['id', 'email', 'name', 'createdAt', 'updatedAt'];
-        if (!validFields.includes(pagination.sortField)) {
-          throw new BadRequestException(
-            `Invalid sort field: ${pagination.sortField}.
-            Please use one of the following fields: ${validFields.join(', ')}`,
-          );
-        }
-        queryBuilder.orderBy(
-          `user.${pagination.sortField}`,
-          pagination.sortOrder,
-        );
-      }
-
-      // Paginación
-      const [items, total] = await queryBuilder
-        .skip((pagination.page - 1) * pagination.limit)
-        .take(pagination.limit)
-        .getManyAndCount();
-
-      return {
-        data: items,
-        meta: {
-          page: pagination.page,
-          limit: pagination.limit,
-          totalItems: total,
-          totalPages: Math.ceil(total / pagination.limit),
-        },
-      };
+      return await this.advancedSearchService.search(
+        this.userRepository,
+        pagination,
+        filters,
+        ['email', 'name', 'role'],
+        true,
+      );
     } catch (error) {
       console.error(error);
-      throw new InternalServerErrorException('Error fetching users');
+      throw new BadRequestException('Error fetching users');
     }
   }
 
-  async findDeleted(pagination: PaginationQueryDto) {
+  async findDeleted(pagination: PaginationDto) {
     try {
-      const queryBuilder = this.userRepository.createQueryBuilder('user');
-      queryBuilder.where({ deletedAt: Not(IsNull()) });
-
-      // Filtros
-      if (pagination.search) {
-        queryBuilder.andWhere('user.email ILIKE :search', {
-          search: `%${pagination.search}%`,
-        });
-      }
-
-      if (pagination.filters) {
-        // Define valid filter fields based on User entity
-        type UserFilter = {
-          id?: string;
-          name?: string;
-          email?: string;
-          role?: 'admin' | 'manager' | 'developer';
-          avatar?: string;
-        };
-
-        Object.entries(pagination.filters as UserFilter).forEach(
-          ([key, value]) => {
-            if (value !== undefined) {
-              queryBuilder.andWhere(`user.${key} = :${key}`, { [key]: value });
-            }
-          },
-        );
-      }
-
-      // Ordenamiento
-      if (pagination.sortField && pagination.sortOrder) {
-        queryBuilder.orderBy(
-          `user.${pagination.sortField}`,
-          pagination.sortOrder,
-        );
-      }
-
-      // Paginación
-      const [items, total] = await queryBuilder
-        .skip((pagination.page - 1) * pagination.limit)
-        .take(pagination.limit)
-        .getManyAndCount();
-
-      return {
-        data: items,
-        meta: {
-          page: pagination.page,
-          limit: pagination.limit,
-          totalItems: total,
-          totalPages: Math.ceil(total / pagination.limit),
-        },
-      };
+      const searchFields = ['id', 'email', 'name', 'createdAt', 'updatedAt'];
+      return await this.advancedSearchService.search(
+        this.userRepository,
+        pagination,
+        {},
+        searchFields,
+        false, // softDelete = false para obtener registros eliminados
+      );
     } catch (error) {
       console.error(error);
       throw new InternalServerErrorException('Error fetching deleted users');
@@ -248,11 +129,9 @@ export class UsersService {
       }
 
       if (softDelete) {
-        return this.userRepository.update(id, {
-          deletedAt: new Date(),
-        });
+        user.deletedAt = new Date();
+        return this.userRepository.save(user);
       }
-
       return this.userRepository.delete(id);
     } catch (error) {
       console.error(error);

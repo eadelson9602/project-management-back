@@ -13,7 +13,8 @@ import { CreateUserDto, UpdateUserDto } from './dto';
 import { Auth } from '@/auth/decorators/auth.decorator';
 import { ValidRoles } from '@/auth/interfaces/valid-roles.interface';
 import { SoftDelete } from '@/common/decorators/soft-delete.decorator';
-import { PaginationQueryDto } from './dto/pagination-query.dto';
+import { PaginationDto } from '@/common/dto/pagination.dto';
+import { UserFiltersDto } from './dto/user-filters.dto';
 
 @Controller('users')
 @Auth()
@@ -27,13 +28,19 @@ export class UsersController {
 
   @Get()
   @Auth(ValidRoles.ADMIN)
-  findAll(@Query() pagination: PaginationQueryDto) {
-    return this.usersService.findAll(pagination.filters || {}, pagination);
+  findAll(@Query() pagination: PaginationDto) {
+    // Convertir el objeto de filtros a un objeto JavaScript si es necesario
+    let filters: UserFiltersDto = {};
+    if (pagination.filters && typeof pagination.filters === 'string') {
+      const tempFilter = pagination.filters as unknown as string;
+      filters = JSON.parse(tempFilter) as UserFiltersDto;
+    }
+    return this.usersService.findAll(pagination, filters);
   }
 
   @Get('deleted')
   @Auth(ValidRoles.ADMIN)
-  findDeleted(@Query() pagination: PaginationQueryDto) {
+  findDeleted(@Query() pagination: PaginationDto) {
     return this.usersService.findDeleted(pagination);
   }
 

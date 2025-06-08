@@ -2,13 +2,15 @@ import {
   Injectable,
   NotFoundException,
   InternalServerErrorException,
+  BadRequestException,
 } from '@nestjs/common';
-import { CreateProjectDto } from './dto/create-project.dto';
-import { UpdateProjectDto } from './dto/update-project.dto';
+import { In } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Project } from './entities/project.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/users/entities/user.entity';
+import { User } from '../users/entities/user.entity';
+import { CreateProjectDto } from './dto/create-project.dto';
+import { UpdateProjectDto } from './dto/update-project.dto';
 
 @Injectable()
 export class ProjectService {
@@ -18,16 +20,30 @@ export class ProjectService {
 
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-  ) {}
+  ) {
+    // Constructor body
+  }
 
   async create(createProjectDto: CreateProjectDto) {
     try {
       const manager = await this.userRepository.findOneBy({
         id: createProjectDto.managerId,
       });
+
+      if (!manager) throw new NotFoundException('Manager not found');
+
+      const developers = await this.userRepository.findBy({
+        id: In(createProjectDto.developersIds),
+      });
+
+      if (developers.length !== createProjectDto.developersIds.length) {
+        throw new BadRequestException('One or more developer IDs are invalid');
+      }
+
       const project = this.projectRepository.create({
         ...createProjectDto,
-        manager: manager || undefined,
+        manager,
+        developers,
       });
 
       await this.projectRepository.save(project);

@@ -30,6 +30,9 @@ export class User {
   @Column({ nullable: true })
   avatar: string;
 
+  @Column({ nullable: true, type: 'timestamp' })
+  deletedAt: Date;
+
   @OneToMany(() => Project, (project) => project.manager)
   managedProjects: Project[];
 

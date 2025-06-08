@@ -6,33 +6,37 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Observable } from 'rxjs';
 import { Request } from 'express';
 import { User } from 'src/users/entities/user.entity';
-import { META_ROLS } from '../../decorators/role-protected.decorator';
+import { META_ROLES } from '../../decorators/role-protected.decorator';
 
 @Injectable()
 export class UserRoleGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
 
-  canActivate(
-    context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
+  canActivate(context: ExecutionContext): boolean {
+    const roles = this.reflector.getAllAndOverride<string[]>(META_ROLES, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
+    if (!roles || roles.length === 0) return true;
+
     const request = context.switchToHttp().getRequest<Request>();
-    const roles = this.reflector.get<string[]>(META_ROLS, context.getHandler());
     const user = request.user as User;
 
-    if (!roles) return true;
-    if (roles.length == 0) return true;
-
-    if (!user) throw new BadRequestException();
-
-    for (const role of roles) {
-      if (user.role == role) return true;
+    if (!user) {
+      throw new BadRequestException('No user found in request');
     }
 
-    throw new ForbiddenException(
-      `User ${user.name} need a valid role: ${roles.join(', ')}`,
-    );
+    const hasRole = roles.some((role) => user.role === role);
+
+    if (!hasRole) {
+      throw new ForbiddenException(
+        `User ${user.name} does not have a required role: ${roles.join(', ')}`,
+      );
+    }
+
+    return true;
   }
 }

@@ -26,4 +26,10 @@ export class AuthController {
     console.log('profile', user);
     return 'profile';
   }
+
+  @Get('refresh-token')
+  @Auth()
+  refreshToken(@GetUser() user: User) {
+    return this.authService.refreshToken(user);
+  }
 }

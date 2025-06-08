@@ -42,7 +42,7 @@ export class AuthService {
       }
 
       const token = this.getJwtToken(user);
-      return { ...user, token };
+      return { id: user.id, email: user.email, token };
     } catch (error) {
       console.error(error);
 
@@ -56,5 +56,10 @@ export class AuthService {
   logout(uuid: string) {
     console.log(uuid);
     return 'This action adds a new auth';
+  }
+
+  refreshToken(user: User) {
+    const token = this.getJwtToken(user);
+    return { id: user.id, email: user.email, token };
   }
 }

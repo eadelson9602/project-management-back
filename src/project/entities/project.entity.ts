@@ -7,6 +7,7 @@ import {
   JoinColumn,
   ManyToMany,
   JoinTable,
+  Index,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 
@@ -16,6 +17,7 @@ export class Project {
   id: string;
 
   @Column()
+  @Index({ unique: true })
   name: string;
 
   @Column({ type: 'text' })
@@ -25,9 +27,11 @@ export class Project {
     type: 'enum',
     enum: ['planning', 'in_progress', 'completed', 'cancelled'],
   })
+  @Index()
   status: 'planning' | 'in_progress' | 'completed' | 'cancelled';
 
   @Column({ type: 'enum', enum: ['low', 'medium', 'high'] })
+  @Index()
   priority: 'low' | 'medium' | 'high';
 
   @Column({ type: 'date' })
@@ -42,6 +46,7 @@ export class Project {
   manager: User;
 
   @Column('uuid')
+  @Index()
   managerId: string;
 
   @ManyToMany(() => User)

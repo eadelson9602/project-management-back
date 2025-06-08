@@ -5,6 +5,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { Project } from '../../project/entities/project.entity';
 import { User } from '../../users/entities/user.entity';
@@ -15,15 +16,18 @@ export class Task {
   id: string;
 
   @Column()
+  @Index()
   title: string;
 
   @Column({ type: 'text' })
   description: string;
 
   @Column({ type: 'enum', enum: ['todo', 'in_progress', 'review', 'done'] })
+  @Index()
   status: string;
 
   @Column({ type: 'enum', enum: ['low', 'medium', 'high'] })
+  @Index()
   priority: string;
 
   @Column('float')
@@ -40,6 +44,7 @@ export class Task {
   project: Project;
 
   @Column('uuid')
+  @Index()
   projectId: string;
 
   // Relación con el desarrollador asignado

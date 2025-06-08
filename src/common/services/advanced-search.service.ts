@@ -1,8 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { Repository, ObjectLiteral } from 'typeorm';
 import { PaginationDto } from '@/common/dto/pagination.dto';
 import { IsNull } from 'typeorm';
-import { SortOrder } from '@/common/dto/pagination.dto';
 
 @Injectable()
 export class AdvancedSearchService {
@@ -23,11 +22,23 @@ export class AdvancedSearchService {
     };
   }> {
     try {
+      // Validar parámetros
+      if (!repository) {
+        throw new BadRequestException('Repository is required');
+      }
+
       const queryBuilder = repository.createQueryBuilder('entity');
 
       // Filtrar por registros no eliminados si softDelete está habilitado
       if (softDelete) {
         queryBuilder.where({ deletedAt: IsNull() });
+      }
+
+      // Validar campos de búsqueda
+      if (pagination.search && searchFields.length === 0) {
+        throw new BadRequestException(
+          'Search fields are required when using search',
+        );
       }
 
       // Búsqueda por texto en campos específicos
@@ -40,46 +51,59 @@ export class AdvancedSearchService {
         });
       }
 
-      // Aplicar filtros específicos
+      // Validar y aplicar filtros específicos
       if (filters) {
         Object.entries(filters).forEach(([key, value]) => {
           if (value !== undefined) {
+            // Validar que el campo existe en la entidad
+            if (
+              !repository.metadata.columns.find(
+                (col) => col.propertyName === key,
+              )
+            ) {
+              throw new BadRequestException(`Invalid filter field: ${key}`);
+            }
+
             // Si el valor es un string, lo tratamos como un filtro de igualdad
             if (typeof value === 'string') {
               queryBuilder.andWhere(`entity.${key} = :${key}`, {
                 [key]: value,
               });
             }
-            // Si es un objeto JSON, intentamos extraer el valor del campo específico
-            else if (typeof value === 'object' && value !== null) {
-              // Si es un objeto JSON, intentamos extraer el valor del campo específico
-              if (key === 'role') {
-                queryBuilder.andWhere(`entity.${key} = :${key}`, {
-                  [key]: value,
-                });
-              } else {
-                // Para otros campos que sean objetos, usamos JSON.stringify
-                queryBuilder.andWhere(`entity.${key} = :${key}`, {
-                  [key]: JSON.stringify(value),
-                });
+            // Si el valor es un array, lo tratamos como IN
+            else if (Array.isArray(value)) {
+              if (value.length === 0) {
+                throw new BadRequestException(
+                  `Filter array cannot be empty for field: ${key}`,
+                );
               }
+              queryBuilder.andWhere(`entity.${key} IN (:...${key})`, {
+                [key]: value,
+              });
+            }
+            // Si el valor es un objeto, lo tratamos como un filtro compuesto
+            else if (typeof value === 'object' && value !== null) {
+              queryBuilder.andWhere(`entity.${key} = :${key}`, {
+                [key]: value,
+              });
             }
           }
         });
       }
 
-      // Ordenamiento
-      if (pagination.sortField && pagination.sortOrder) {
-        const validFields = searchFields;
-        if (!validFields.includes(pagination.sortField)) {
-          throw new Error(
-            `Invalid sort field: ${pagination.sortField}.\n` +
-              `Please use one of the following fields: ${validFields.join(', ')}`,
+      // Validar campo de ordenamiento
+      if (pagination.sortField) {
+        const column = repository.metadata.columns.find(
+          (col) => col.propertyName === pagination.sortField,
+        );
+        if (!column) {
+          throw new BadRequestException(
+            `Invalid sort field: ${pagination.sortField}`,
           );
         }
         queryBuilder.orderBy(
           `entity.${pagination.sortField}`,
-          pagination.sortOrder === SortOrder.ASC ? 'ASC' : 'DESC',
+          pagination.sortOrder,
         );
       }
 

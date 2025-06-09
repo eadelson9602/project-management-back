@@ -17,7 +17,6 @@ import { PaginationDto } from '@/common/dto/pagination.dto';
 import { UserFiltersDto } from './dto/user-filters.dto';
 
 @Controller('users')
-@Auth()
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
@@ -50,6 +49,7 @@ export class UsersController {
   }
 
   @Patch(':id')
+  @Auth()
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(id, updateUserDto);
   }

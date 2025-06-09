@@ -2,7 +2,6 @@ import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
-  InternalServerErrorException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
@@ -25,32 +24,23 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto) {
-    try {
-      const user = await this.userRepository.findOne({
-        where: { email: loginDto.email },
-        select: { password: true, email: true, id: true },
-      });
+    const user = await this.userRepository.findOne({
+      where: { email: loginDto.email },
+      select: { password: true, email: true, id: true },
+    });
 
-      if (!user) {
-        throw new NotFoundException('User not found');
-      }
-
-      const isPasswordMatch = comparePassword(loginDto.password, user.password);
-
-      if (!isPasswordMatch) {
-        throw new UnauthorizedException('Invalid credentials');
-      }
-
-      const token = this.getJwtToken(user);
-      return { id: user.id, email: user.email, token };
-    } catch (error) {
-      console.error(error);
-
-      if (error instanceof Error && error.message == 'Invalid credentials') {
-        throw new UnauthorizedException(error.message);
-      }
-      throw new InternalServerErrorException('Internal server error');
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
+
+    const isPasswordMatch = comparePassword(loginDto.password, user.password);
+
+    if (!isPasswordMatch) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const token = this.getJwtToken(user);
+    return { id: user.id, email: user.email, token };
   }
 
   logout(uuid: string) {

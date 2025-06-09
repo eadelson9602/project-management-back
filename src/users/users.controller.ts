@@ -43,18 +43,18 @@ export class UsersController {
     return this.usersService.findDeleted(pagination);
   }
 
-  @Get(':id')
+  @Get('find/:id')
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
   }
 
-  @Patch(':id')
+  @Patch('update/:id')
   @Auth()
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(id, updateUserDto);
   }
 
-  @Delete(':id')
+  @Delete('delete/:id')
   @Auth(ValidRoles.ADMIN)
   delete(@Param('id') id: string, @SoftDelete() softDelete: boolean = false) {
     return this.usersService.delete(id, softDelete);

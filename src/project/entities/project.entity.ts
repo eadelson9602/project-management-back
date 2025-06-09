@@ -8,8 +8,10 @@ import {
   ManyToMany,
   JoinTable,
   Index,
+  OneToMany,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
+import { Task } from '../../task/entities/task.entity';
 
 @Entity()
 export class Project {
@@ -56,6 +58,9 @@ export class Project {
     inverseJoinColumn: { name: 'developerId', referencedColumnName: 'id' },
   })
   developers: User[];
+
+  @OneToMany(() => Task, (task) => task.project)
+  tasks: Task[];
 
   @CreateDateColumn()
   createdAt: Date;

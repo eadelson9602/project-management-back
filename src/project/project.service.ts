@@ -74,7 +74,10 @@ export class ProjectService {
 
   async findOne(id: string) {
     try {
-      return await this.projectRepository.findOne({ where: { id } });
+      return await this.projectRepository.findOne({
+        where: { id },
+        relations: ['manager', 'developers', 'tasks'],
+      });
     } catch (error) {
       console.error(error);
       throw new InternalServerErrorException(error);

@@ -32,9 +32,14 @@ jobs:
           yarn lint
           yarn format
 
-      - name: Run tests
+      - name: Run unit tests
         run: |
-          yarn test
+          yarn test:unit
+          yarn test:cov
+
+      - name: Run integration tests
+        run: |
+          yarn test:integration
           yarn test:cov
 
       - name: Generate database migrations

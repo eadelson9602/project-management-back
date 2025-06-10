@@ -26,8 +26,6 @@ import { AuthModule } from './auth/auth.module';
             synchronize: true,
           }
         : {
-            ssl: true,
-            extra: { rejectUnauthorized: false },
             type: 'postgres' as const,
             url: process.env.DATABASE_URL,
             autoLoadEntities: true,

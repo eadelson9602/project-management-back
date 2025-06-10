@@ -47,15 +47,25 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-      - name: Deploy to Heroku
+      - name: Build Docker image
         if: github.ref == 'refs/heads/main'
-        uses: akhileshns/heroku-deploy@v3.12.12
-        with:
-          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-          heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
-          heroku_email: ${{ secrets.HEROKU_EMAIL }}
-          build: |
-            yarn install
-            yarn build
-          process-types:
-            web: yarn start:prod
+        run: |
+          docker build -t registry.heroku.com/${{ secrets.HEROKU_APP_NAME }}/web .
+
+      - name: Login to Heroku Container Registry
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "${{ secrets.HEROKU_API_KEY }}" | docker login --username=_ --password-stdin registry.heroku.com
+
+      - name: Push Docker image to Heroku
+        if: github.ref == 'refs/heads/main'
+        run: |
+          docker push registry.heroku.com/${{ secrets.HEROKU_APP_NAME }}/web
+
+      - name: Release Docker image
+        if: github.ref == 'refs/heads/main'
+        run: |
+          heroku container:release web -a ${{ secrets.HEROKU_APP_NAME }}
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+          HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}

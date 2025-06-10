@@ -1,5 +1,4 @@
-import { Controller, Post, Body, UseGuards, Get } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+import { Controller, Post, Body, Get } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { GetUser, Auth } from './decorators/';
@@ -16,19 +15,6 @@ export class AuthController {
   @ApiBody({ type: LoginDto })
   login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
-  }
-
-  @Post('logout')
-  @UseGuards(AuthGuard('jwt'))
-  logout(@GetUser() user: User) {
-    return this.authService.logout(user.id);
-  }
-
-  @Get('profile')
-  @Auth()
-  profile(@GetUser() user: User) {
-    console.log('profile', user);
-    return 'profile';
   }
 
   @Get('refresh_token')

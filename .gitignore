@@ -60,3 +60,4 @@ postgres/
 
 .env
 
+tsconfig.build.tsbuildinfo

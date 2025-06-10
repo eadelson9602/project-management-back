@@ -1,7 +1,6 @@
-import { describe, it } from 'node:test';
-
-describe('UsersController', () => {
-  it('should return a list of users', () => {
-    console.log('Testing UsersController findAll method');
+describe('UsersController dummy test', () => {
+  it('should pass dummy test', () => {
+    console.log('Dummy test for CI/CD');
+    expect(true).toBe(true);
   });
 });

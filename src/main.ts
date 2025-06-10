@@ -18,13 +18,10 @@ async function bootstrap() {
 
   // Configurar CORS
   app.enableCors({
-    origin: 'http://localhost:9000',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
-  });
-
-  app.enableCors({
-    origin: 'https://friendly-gumption-d3f1ee.netlify.app/',
+    origin:
+      process.env.STAGE == 'dev'
+        ? 'http://localhost:9000'
+        : 'https://friendly-gumption-d3f1ee.netlify.app/',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });

@@ -1,10 +1,13 @@
 # Etapa de construcción
-FROM node:18-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
 # Copiar package.json y yarn.lock
 COPY package*.json ./
+
+# Set NODE_ENV to production
+ENV NODE_ENV=production
 
 # Instalar dependencias
 RUN yarn install
@@ -16,9 +19,12 @@ COPY . .
 RUN yarn build
 
 # Etapa de producción
-FROM node:18-alpine
+FROM node:22-alpine
 
 WORKDIR /app
+
+# Set NODE_ENV to production
+ENV NODE_ENV=production
 
 # Instalar dependencias de producción
 COPY package*.json ./

@@ -30,9 +30,10 @@ jobs:
         run: yarn global add @railway/cli
 
       - name: Deploy to Railway
-        run: railway up -- --project 7842930a-3f54-4d55-9b9a-26ddbca04332
+        run: railway up
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: 7842930a-3f54-4d55-9b9a-26ddbca04332
 
       - name: Notify on success
         if: success()

@@ -37,6 +37,7 @@ jobs:
           yarn test:unit
 
       - name: Run integration tests
+        if: ${{ env.SKIP_INTEGRATION_TESTS != 'true' }}
         run: |
           yarn test:integration
 

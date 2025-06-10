@@ -1,6 +1,5 @@
 describe('UsersController dummy test', () => {
-  it('should pass dummy test', () => {
+  it('should print a message', () => {
     console.log('Dummy test for CI/CD');
-    expect(true).toBe(true);
   });
 });

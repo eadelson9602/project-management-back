@@ -11,7 +11,6 @@ import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { hashPassword } from './helpers/bcrypt.helper';
 import { PaginationDto } from '@/common/dto/pagination.dto';
-import { UserFiltersDto } from './dto/user-filters.dto';
 import { Not, IsNull } from 'typeorm';
 import { AdvancedSearchService } from '@/common/services/advanced-search.service';
 
@@ -39,16 +38,16 @@ export class UsersService {
     }
   }
 
-  async findAll(pagination: PaginationDto, filters: UserFiltersDto) {
+  async findAll(pagination: PaginationDto) {
     try {
       return await this.advancedSearchService.search(
         this.userRepository,
         pagination,
-        filters,
+        pagination.filters,
         ['email', 'name', 'role'],
         true,
       );
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(error);
       throw new BadRequestException('Error fetching users');
     }
@@ -60,7 +59,7 @@ export class UsersService {
       return await this.advancedSearchService.search(
         this.userRepository,
         pagination,
-        {},
+        pagination.filters,
         searchFields,
         false, // softDelete = false para obtener registros eliminados
       );
@@ -118,7 +117,7 @@ export class UsersService {
     }
   }
 
-  async delete(id: string, softDelete: boolean = false) {
+  async remove(id: string, softDelete: boolean = false) {
     try {
       const user = await this.userRepository.findOne({
         where: {

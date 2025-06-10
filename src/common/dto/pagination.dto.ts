@@ -6,67 +6,61 @@ import {
   IsEnum,
   IsString,
   ValidateNested,
-  IsArray,
-  IsUUID,
   IsIn,
-  ArrayUnique,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export enum SortOrder {
   ASC = 'ASC',
   DESC = 'DESC',
 }
 
-export class FilterDto {
-  @IsOptional()
-  @IsArray({ message: 'Status must be an array' })
-  @ArrayUnique({ message: 'Status values must be unique' })
-  @IsIn(['todo', 'in_progress', 'review', 'done'], {
-    each: true,
-    message:
-      'Invalid status value. Must be: todo, in_progress, review, or done',
-  })
-  status?: string[];
-
-  @IsOptional()
-  @IsArray({ message: 'Priority must be an array' })
-  @ArrayUnique({ message: 'Priority values must be unique' })
-  @IsIn(['low', 'medium', 'high'], {
-    each: true,
-    message: 'Invalid priority value. Must be: low, medium, or high',
-  })
-  priority?: string[];
-
-  @IsOptional()
-  @IsUUID(4, { message: 'Assigned to ID must be a valid UUID v4' })
-  assignedTo?: string;
-
-  @IsOptional()
-  @IsUUID(4, { message: 'Project ID must be a valid UUID v4' })
-  projectId?: string;
-}
-
 export class PaginationDto {
+  @ApiProperty({
+    example: 1,
+    description: 'Número de página (debe ser mayor que 0)',
+    minimum: 1,
+    default: 1,
+  })
   @IsInt({ message: 'Page must be a number' })
   @Min(1, { message: 'Page must be greater than 0' })
   @Max(1000, { message: 'Page cannot exceed 1000' })
   page: number = 1;
 
+  @ApiProperty({
+    example: 10,
+    description: 'Cantidad de elementos por página (máximo 100)',
+    minimum: 1,
+    maximum: 100,
+    default: 10,
+  })
   @IsInt({ message: 'Limit must be a number' })
   @Min(1, { message: 'Limit must be greater than 0' })
   @Max(100, { message: 'Limit cannot exceed 100 items per page' })
   limit: number = 10;
 
+  @ApiPropertyOptional({
+    example: 'login',
+    description: 'Término de búsqueda para filtrar resultados',
+  })
   @IsOptional()
   @IsString({ message: 'Search term must be a string' })
   search?: string;
 
+  @ApiPropertyOptional({
+    example: { status: 'completed', priority: 'high' },
+    description: 'Filtros avanzados como objeto',
+    type: Object,
+  })
   @IsOptional()
   @ValidateNested()
-  @Type(() => FilterDto)
-  filters?: FilterDto;
+  filters?: any;
 
+  @ApiPropertyOptional({
+    example: 'createdAt',
+    description: 'Campo por el cual ordenar los resultados',
+    enum: ['title', 'status', 'priority', 'createdAt', 'updatedAt'],
+  })
   @IsOptional()
   @IsString({ message: 'Sort field must be a valid column name' })
   @IsIn(['title', 'status', 'priority', 'createdAt', 'updatedAt'], {
@@ -75,6 +69,13 @@ export class PaginationDto {
   })
   sortField?: string;
 
+  @ApiPropertyOptional({
+    example: SortOrder.ASC,
+    description:
+      'Orden de la lista: ASC para ascendente, DESC para descendente',
+    enum: SortOrder,
+    default: SortOrder.ASC,
+  })
   @IsOptional()
   @IsEnum(SortOrder, { message: 'Sort order must be either ASC or DESC' })
   sortOrder?: SortOrder = SortOrder.ASC;

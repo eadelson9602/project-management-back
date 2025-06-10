@@ -123,12 +123,12 @@ export class TaskService {
     }
   }
 
-  async findAll(pagination: PaginationDto, filters: any) {
+  async findAll(pagination: PaginationDto) {
     try {
       return this.advancedSearchService.search(
         this.taskRepo,
         pagination,
-        filters,
+        pagination.filters,
         ['title', 'description'],
         false,
       );

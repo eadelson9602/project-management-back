@@ -57,12 +57,12 @@ export class ProjectService {
     }
   }
 
-  async findAll(pagination: PaginationDto, filters: any) {
+  async findAll(pagination: PaginationDto) {
     try {
       return this.advancedSearchService.search(
         this.projectRepository,
         pagination,
-        filters,
+        pagination.filters,
         ['name', 'description'],
         false,
       );

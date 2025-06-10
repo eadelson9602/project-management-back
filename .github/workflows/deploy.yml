@@ -35,12 +35,10 @@ jobs:
       - name: Run unit tests
         run: |
           yarn test:unit
-          yarn test:cov
 
       - name: Run integration tests
         run: |
           yarn test:integration
-          yarn test:cov
 
       - name: Generate database migrations
         run: yarn migration:generate

@@ -29,9 +29,9 @@ jobs:
       - name: Deploy to Railway
         uses: railwayapp/railway-action@v3
         with:
-          token: ${{ secrets.RAILWAY_TOKEN }}
-          project: project-management-api
-          environment: production
+          railwayToken: ${{ secrets.RAILWAY_TOKEN }}
+          projectId: 7842930a-3f54-4d55-9b9a-26ddbca04332
+          # Puedes agregar más opciones si lo necesitas
 
       - name: Notify on success
         if: success()

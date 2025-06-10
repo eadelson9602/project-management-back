@@ -95,6 +95,10 @@ $ docker-compose up -d
 
 5. Iniciar proyecto modo desarrollo
 
+comentarea esta dos lines en el tsconfig.json ya que esto solo debe estar habilidato cuando se envia a produccion, en modo desarrollo no permite ejecutar el proyecto en modo watch
+"rootDir": "src",
+"include": ["src"]
+
 ```bash
 $ yarn run start:dev
 ```

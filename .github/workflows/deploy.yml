@@ -26,12 +26,13 @@ jobs:
       - name: Build
         run: yarn build
 
+      - name: Install Railway CLI
+        run: npm install -g railway
+
       - name: Deploy to Railway
-        uses: railwayapp/cli-action@v1
-        with:
-          railwayToken: ${{ secrets.RAILWAY_TOKEN }}
-          projectId: 7842930a-3f54-4d55-9b9a-26ddbca04332
-          # Puedes agregar más opciones si lo necesitas
+        run: railway up --project 7842930a-3f54-4d55-9b9a-26ddbca04332
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
       - name: Notify on success
         if: success()

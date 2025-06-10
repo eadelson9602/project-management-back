@@ -23,6 +23,50 @@
 
 ## Description
 
+Describe your application here.
+
+## Deployment
+
+### Heroku
+
+1. Create a Heroku account if you don't have one: https://signup.heroku.com/
+2. Install the Heroku CLI: https://devcenter.heroku.com/articles/heroku-cli
+3. Create a new Heroku app:
+   ```bash
+   heroku create your-app-name
+   ```
+4. Set up environment variables:
+   ```bash
+   heroku config:set NODE_ENV=production
+   heroku config:set PORT=3000
+   heroku config:set DB_HOST=your_db_host
+   heroku config:set DB_PORT=5432
+   heroku config:set DB_USERNAME=your_db_user
+   heroku config:set DB_PASSWORD=your_db_password
+   heroku config:set DB_NAME=your_db_name
+   heroku config:set JWT_SECRET=your_jwt_secret
+   heroku config:set JWT_EXPIRES_IN=24h
+   ```
+5. Deploy to Heroku:
+   ```bash
+   git push heroku main
+   ```
+
+### GitHub Actions CI/CD
+
+The project uses GitHub Actions for CI/CD. To enable automatic deployments:
+
+1. Go to your GitHub repository settings
+2. Navigate to "Secrets and variables" -> "Actions"
+3. Add these secrets:
+   - `HEROKU_API_KEY`: Your Heroku API key
+   - `HEROKU_APP_NAME`: Your Heroku app name
+   - `HEROKU_EMAIL`: Your Heroku email
+
+Every push to the main branch will trigger a build and deployment to Heroku.
+
+## Description
+
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
 1. Clonar repositorio

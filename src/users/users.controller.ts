@@ -24,7 +24,7 @@ import { PaginationDto } from '@/common/dto/pagination.dto';
 export class UserController {
   constructor(private readonly userService: UsersService) {}
 
-  @Post()
+  @Post('create')
   @ApiOperation({ summary: 'Crear usuario' })
   @ApiBody({ type: CreateUserDto })
   create(@Body() createUserDto: CreateUserDto) {
@@ -37,14 +37,14 @@ export class UserController {
     return this.userService.findAll(pagination);
   }
 
-  @Get(':id')
+  @Get('/find/:id')
   @ApiOperation({ summary: 'Obtener usuario por ID' })
   @ApiParam({ name: 'id', description: 'ID del usuario' })
   findOne(@Param('id') id: string) {
     return this.userService.findOne(id);
   }
 
-  @Patch(':id')
+  @Patch('/update/:id')
   @ApiOperation({ summary: 'Actualizar usuario' })
   @ApiParam({ name: 'id', description: 'ID del usuario' })
   @ApiBody({ type: UpdateUserDto })
@@ -52,7 +52,7 @@ export class UserController {
     return this.userService.update(updateUserDto);
   }
 
-  @Delete(':id')
+  @Delete('/delete/:id')
   @ApiOperation({ summary: 'Eliminar usuario' })
   @ApiParam({ name: 'id', description: 'ID del usuario' })
   remove(@Param('id') id: string) {

@@ -4,7 +4,8 @@ FROM node:22-alpine AS builder
 WORKDIR /app
 
 # Copiar package.json y yarn.lock
-COPY package*.json ./
+COPY package.json yarn.lock ./
+RUN yarn install --frozen-lockfile
 
 # Set NODE_ENV to production
 ENV NODE_ENV=production

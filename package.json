@@ -1,8 +1,8 @@
 {
-  "name": "api_v2",
+  "name": "project-management-back",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "Backend service for an application that manages projects",
+  "author": "Elver Rodriguez",
   "private": true,
   "license": "UNLICENSED",
   "engines": {

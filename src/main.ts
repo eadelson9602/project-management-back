@@ -21,7 +21,7 @@ async function bootstrap() {
     origin:
       process.env.STAGE == 'dev'
         ? 'http://localhost:9000'
-        : 'https://friendly-gumption-d3f1ee.netlify.app/',
+        : 'https://friendly-gumption-d3f1ee.netlify.app',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });

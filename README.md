@@ -98,3 +98,9 @@ $ docker-compose up -d
 ```bash
 $ yarn run start:dev
 ```
+
+6. Documentation path
+
+```bash
+/api/docs
+```

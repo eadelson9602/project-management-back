@@ -13,6 +13,7 @@ import {
   ApiBody,
   ApiParam,
   ApiOperation,
+  ApiOkResponse,
 } from '@nestjs/swagger';
 import { CreateProjectDto, UpdateProjectDto } from './dto';
 import { ProjectService } from './project.service';
@@ -33,6 +34,27 @@ export class ProjectController {
 
   @Post()
   @ApiOperation({ summary: 'Listar proyectos con filtros avanzados' })
+  @ApiOkResponse({
+    description: 'Lista de proyectos paginada',
+    schema: {
+      example: {
+        data: [
+          {
+            id: 'uuid',
+            name: 'Proyecto A',
+            status: 'completed',
+            priority: 'high',
+          },
+        ],
+        meta: {
+          page: 1,
+          limit: 10,
+          totalItems: 1,
+          totalPages: 1,
+        },
+      },
+    },
+  })
   findAll(@Body() pagination: PaginationDto) {
     return this.projectService.findAll(pagination);
   }

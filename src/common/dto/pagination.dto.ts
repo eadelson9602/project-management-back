@@ -5,8 +5,8 @@ import {
   Max,
   IsEnum,
   IsString,
-  ValidateNested,
   IsIn,
+  IsObject,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -47,14 +47,15 @@ export class PaginationDto {
   @IsString({ message: 'Search term must be a string' })
   search?: string;
 
-  @ApiPropertyOptional({
-    example: { status: 'completed', priority: 'high' },
-    description: 'Filtros avanzados como objeto',
-    type: Object,
-  })
   @IsOptional()
-  @ValidateNested()
-  filters?: any;
+  @IsObject()
+  @ApiPropertyOptional({
+    type: Object,
+    description:
+      'Objeto de filtros avanzados. Las propiedades dependen de cada servicio.',
+    example: { status: 'completed', priority: 'high' },
+  })
+  filters?: Record<string, any>;
 
   @ApiPropertyOptional({
     example: 'createdAt',

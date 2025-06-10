@@ -11,18 +11,29 @@ import { AuthModule } from './auth/auth.module';
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    TypeOrmModule.forRoot({
-      ssl: process.env.STAGE == 'prod' ? true : false,
-      extra: process.env.STAGE == 'prod' ? { rejectUnauthorized: false } : null,
-      type: 'postgres',
-      host: process.env.DATABASE_HOST,
-      port: Number(process.env.DATABASE_PORT),
-      username: process.env.DATABASE_USER,
-      password: process.env.DATABASE_PASSWORD,
-      database: process.env.DATABASE_NAME,
-      autoLoadEntities: true,
-      synchronize: true,
-    }),
+    TypeOrmModule.forRoot(
+      process.env.STAGE === 'dev'
+        ? {
+            ssl: false,
+            extra: undefined,
+            type: 'postgres' as const,
+            host: process.env.DATABASE_HOST,
+            port: Number(process.env.DATABASE_PORT),
+            username: process.env.DATABASE_USER,
+            password: process.env.DATABASE_PASSWORD,
+            database: process.env.DATABASE_NAME,
+            autoLoadEntities: true,
+            synchronize: true,
+          }
+        : {
+            ssl: true,
+            extra: { rejectUnauthorized: false },
+            type: 'postgres' as const,
+            url: process.env.DATABASE_URL,
+            autoLoadEntities: true,
+            synchronize: false,
+          },
+    ),
     UsersModule,
     ProjectModule,
     TaskModule,

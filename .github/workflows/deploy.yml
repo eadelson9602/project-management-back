@@ -27,7 +27,7 @@ jobs:
         run: yarn build
 
       - name: Deploy to Railway
-        uses: railwayapp/railway-action@v3
+        uses: railwayapp/railway-action@v1
         with:
           railwayToken: ${{ secrets.RAILWAY_TOKEN }}
           projectId: 7842930a-3f54-4d55-9b9a-26ddbca04332

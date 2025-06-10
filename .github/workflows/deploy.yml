@@ -12,7 +12,7 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    environment: production
+    environment: project-management-lab
     strategy:
       matrix:
         node-version: [22]

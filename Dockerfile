@@ -5,13 +5,9 @@ WORKDIR /app
 
 # Copiar package.json y yarn.lock
 COPY package.json yarn.lock ./
+
+# Instalar TODAS las dependencias (dev + prod)
 RUN yarn install --frozen-lockfile
-
-# Set NODE_ENV to production
-ENV NODE_ENV=production
-
-# Instalar dependencias
-RUN yarn install
 
 # Copiar el código fuente
 COPY . .
@@ -27,9 +23,11 @@ WORKDIR /app
 # Set NODE_ENV to production
 ENV NODE_ENV=production
 
-# Instalar dependencias de producción
-COPY package*.json ./
-RUN yarn install --production
+# Copiar package.json y yarn.lock
+COPY package.json yarn.lock ./
+
+# Instalar solo dependencias de producción
+RUN yarn install --production --frozen-lockfile
 
 # Copiar el código construido desde la etapa de builder
 COPY --from=builder /app/dist ./dist

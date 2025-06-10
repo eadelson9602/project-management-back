@@ -23,6 +23,12 @@ async function bootstrap() {
     credentials: true,
   });
 
+  app.enableCors({
+    origin: 'https://friendly-gumption-d3f1ee.netlify.app/',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
+
   app.setGlobalPrefix('api');
 
   app.useGlobalPipes(

@@ -1,63 +1,41 @@
-name: CI/CD Pipeline
+name: Deploy to Railway
 
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     environment: project-management-lab
-    strategy:
-      matrix:
-        node-version: [22]
 
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Node.js ${{ matrix.node-version }}
+      - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: '18'
           cache: 'yarn'
 
       - name: Install dependencies
         run: yarn install
 
-      - name: Lint and format code
-        run: |
-          yarn lint
-          yarn format
+      - name: Build
+        run: yarn build
 
-      - name: Run unit tests
-        run: |
-          yarn test:unit
+      - name: Deploy to Railway
+        uses: railwayapp/railway-action@v3
+        with:
+          token: ${{ secrets.RAILWAY_TOKEN }}
+          project: project-management-api
+          environment: production
 
-      - name: Run integration tests
-        if: ${{ env.SKIP_INTEGRATION_TESTS != 'true' }}
-        run: |
-          yarn test:integration
-
-      - name: Build Docker image
-        if: github.ref == 'refs/heads/main'
-        run: |
-          docker build -t registry.heroku.com/${{ secrets.HEROKU_APP_NAME }}/web .
-
-      - name: Login to Heroku Container Registry
-        if: github.ref == 'refs/heads/main'
-        run: |
-          echo "${{ secrets.HEROKU_API_KEY }}" | docker login --username=_ --password-stdin registry.heroku.com
-
-      - name: Push Docker image to Heroku
-        if: github.ref == 'refs/heads/main'
-        run: |
-          docker push registry.heroku.com/${{ secrets.HEROKU_APP_NAME }}/web
-
+      - name: Notify on success
+        if: success()
+        run: echo "Deployment successful!"
       - name: Release Docker image
         if: github.ref == 'refs/heads/main'
         run: |

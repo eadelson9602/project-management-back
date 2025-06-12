@@ -44,11 +44,11 @@ export class UserController {
     return this.userService.findOne(id);
   }
 
-  @Patch('/update/:id')
+  @Patch('/update/')
   @ApiOperation({ summary: 'Actualizar usuario' })
   @ApiParam({ name: 'id', description: 'ID del usuario' })
   @ApiBody({ type: UpdateUserDto })
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  update(@Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(updateUserDto);
   }
 

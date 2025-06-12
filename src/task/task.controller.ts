@@ -31,7 +31,7 @@ import { PaginationDto } from '@/common/dto/pagination.dto';
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
-  @Post()
+  @Post('create')
   @ApiOperation({ summary: 'Crear tarea' })
   @ApiBody({ type: CreateTaskDto })
   @ApiCreatedResponse({
@@ -76,7 +76,7 @@ export class TaskController {
     return this.taskService.findAll(pagination);
   }
 
-  @Get(':id')
+  @Get('find/:id')
   @ApiOperation({ summary: 'Obtener tarea por ID' })
   @ApiParam({ name: 'id', description: 'ID de la tarea' })
   @ApiOkResponse({
@@ -88,7 +88,7 @@ export class TaskController {
     return this.taskService.findOne(id);
   }
 
-  @Patch(':id')
+  @Patch('update/:id')
   @ApiOperation({ summary: 'Actualizar tarea' })
   @ApiParam({ name: 'id', description: 'ID de la tarea' })
   @ApiBody({ type: UpdateTaskDto })
@@ -100,11 +100,11 @@ export class TaskController {
   @ApiBadRequestResponse({
     description: 'Datos inválidos para actualizar la tarea',
   })
-  update(@Param('id') id: string, @Body() updateTaskDto: UpdateTaskDto) {
+  update(@Body() updateTaskDto: UpdateTaskDto) {
     return this.taskService.update(updateTaskDto);
   }
 
-  @Delete(':id')
+  @Delete('delete/:id')
   @ApiOperation({ summary: 'Eliminar tarea' })
   @ApiParam({ name: 'id', description: 'ID de la tarea' })
   @ApiNoContentResponse({ description: 'Tarea eliminada exitosamente' })

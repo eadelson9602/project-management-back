@@ -64,11 +64,22 @@ export class AdvancedSearchService {
               throw new BadRequestException(`Invalid filter field: ${key}`);
             }
 
-            // Si el valor es un string, lo tratamos como un filtro de igualdad
+            // Si el valor es un string, lo tratamos como un filtro exacto para campos enum
             if (typeof value === 'string') {
-              queryBuilder.andWhere(`entity.${key} = :${key}`, {
-                [key]: value,
-              });
+              const column = repository.metadata.columns.find(
+                (col) => col.propertyName === key,
+              );
+
+              // Si es un campo enum, usamos = en lugar de ILIKE
+              if (column?.type === 'enum') {
+                queryBuilder.andWhere(`entity.${key} = :${key}`, {
+                  [key]: value,
+                });
+              } else {
+                queryBuilder.andWhere(`entity.${key} ILIKE :${key}`, {
+                  [key]: `%${value}%`,
+                });
+              }
             }
             // Si el valor es un array, lo tratamos como IN
             else if (Array.isArray(value)) {

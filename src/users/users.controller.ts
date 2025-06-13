@@ -17,10 +17,13 @@ import {
 import { CreateUserDto, UpdateUserDto } from './dto';
 import { UsersService } from './users.service';
 import { PaginationDto } from '@/common/dto/pagination.dto';
+import { Auth } from '@/auth/decorators/auth.decorator';
+import { ValidRoles } from '@/auth/interfaces/valid-roles.interface';
 
 @ApiTags('users')
 @ApiBearerAuth()
 @Controller('users')
+@Auth()
 export class UserController {
   constructor(private readonly userService: UsersService) {}
 
@@ -33,6 +36,7 @@ export class UserController {
 
   @Post()
   @ApiOperation({ summary: 'Listar usuarios con filtros avanzados' })
+  @Auth(ValidRoles.ADMIN, ValidRoles.MANAGER)
   findAll(@Body() pagination: PaginationDto) {
     return this.userService.findAll(pagination);
   }
@@ -55,6 +59,7 @@ export class UserController {
   @Delete('/delete/:id')
   @ApiOperation({ summary: 'Eliminar usuario' })
   @ApiParam({ name: 'id', description: 'ID del usuario' })
+  @Auth(ValidRoles.ADMIN, ValidRoles.MANAGER)
   remove(@Param('id') id: string) {
     return this.userService.remove(id);
   }

@@ -18,14 +18,18 @@ import {
 import { CreateProjectDto, UpdateProjectDto } from './dto';
 import { ProjectService } from './project.service';
 import { PaginationDto } from '@/common/dto/pagination.dto';
+import { Auth } from '@/auth/decorators/auth.decorator';
+import { ValidRoles } from '@/auth/interfaces/valid-roles.interface';
 
 @ApiTags('projects')
 @ApiBearerAuth()
 @Controller('projects')
+@Auth()
 export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}
 
   @Post('create')
+  @Auth(ValidRoles.ADMIN, ValidRoles.MANAGER)
   @ApiOperation({ summary: 'Crear proyecto' })
   @ApiBody({ type: CreateProjectDto })
   create(@Body() createProjectDto: CreateProjectDto) {
@@ -67,6 +71,7 @@ export class ProjectController {
   }
 
   @Patch('update')
+  @Auth(ValidRoles.ADMIN, ValidRoles.MANAGER)
   @ApiOperation({ summary: 'Actualizar proyecto' })
   @ApiBody({ type: UpdateProjectDto })
   update(@Body() updateProjectDto: UpdateProjectDto) {
@@ -74,6 +79,7 @@ export class ProjectController {
   }
 
   @Delete('remove/:id')
+  @Auth(ValidRoles.ADMIN, ValidRoles.MANAGER)
   @ApiOperation({ summary: 'Eliminar proyecto' })
   @ApiParam({ name: 'id', description: 'ID del proyecto' })
   remove(@Param('id') id: string) {

@@ -24,10 +24,13 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 import { Task } from './entities/task.entity';
 import { TaskService } from './task.service';
 import { PaginationDto } from '@/common/dto/pagination.dto';
+import { Auth } from '@/auth/decorators/auth.decorator';
+import { ValidRoles } from '@/auth/interfaces/valid-roles.interface';
 
 @ApiTags('tasks')
 @ApiBearerAuth()
 @Controller('tasks')
+@Auth()
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
@@ -39,6 +42,7 @@ export class TaskController {
     type: CreateTaskDto,
   })
   @ApiBadRequestResponse({ description: 'Datos inválidos para crear la tarea' })
+  @Auth(ValidRoles.ADMIN, ValidRoles.MANAGER)
   create(@Body() createTaskDto: CreateTaskDto) {
     return this.taskService.create(createTaskDto);
   }
@@ -109,6 +113,7 @@ export class TaskController {
   @ApiParam({ name: 'id', description: 'ID de la tarea' })
   @ApiNoContentResponse({ description: 'Tarea eliminada exitosamente' })
   @ApiNotFoundResponse({ description: 'Tarea no encontrada' })
+  @Auth(ValidRoles.ADMIN, ValidRoles.MANAGER)
   remove(@Param('id') id: string) {
     return this.taskService.remove(id);
   }

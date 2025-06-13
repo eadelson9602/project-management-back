@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-base-to-string */
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { Repository, ObjectLiteral } from 'typeorm';
 import { PaginationDto } from '@/common/dto/pagination.dto';
@@ -55,48 +56,88 @@ export class AdvancedSearchService {
       if (filters) {
         Object.entries(filters).forEach(([key, value]) => {
           if (value !== undefined) {
-            // Validar que el campo existe en la entidad
-            if (
-              !repository.metadata.columns.find(
-                (col) => col.propertyName === key,
-              )
-            ) {
+            const column = repository.metadata.columns.find(
+              (col) => col.propertyName === key,
+            );
+
+            if (!column) {
               throw new BadRequestException(`Invalid filter field: ${key}`);
             }
 
-            // Si el valor es un string, lo tratamos como un filtro exacto para campos enum
-            if (typeof value === 'string') {
-              const column = repository.metadata.columns.find(
-                (col) => col.propertyName === key,
-              );
+            // Manejar diferentes tipos de datos según el tipo de columna
+            switch (column.type) {
+              case 'enum':
+                // Para campos enum, usar comparación exacta
+                if (typeof value === 'string') {
+                  queryBuilder.andWhere(`entity.${key} = :${key}`, {
+                    [key]: value,
+                  });
+                } else {
+                  throw new BadRequestException(
+                    `Invalid value type for enum field: ${key}, expected string but got ${typeof value}`,
+                  );
+                }
+                break;
 
-              // Si es un campo enum, usamos = en lugar de ILIKE
-              if (column?.type === 'enum') {
-                queryBuilder.andWhere(`entity.${key} = :${key}`, {
-                  [key]: value,
-                });
-              } else {
+              case 'uuid':
+                // Para UUID, validar que sea un string
+                if (typeof value === 'string') {
+                  queryBuilder.andWhere(`entity.${key} = :${key}`, {
+                    [key]: value,
+                  });
+                } else {
+                  throw new BadRequestException(
+                    `Invalid value type for UUID field: ${key}, expected string but got ${typeof value}`,
+                  );
+                }
+                break;
+
+              case 'number':
+              case 'int':
+              case 'integer':
+              case 'float':
+              case 'decimal':
+              case 'bigint':
+                // Para campos numéricos, validar que sea un string y convertir
+                if (typeof value === 'string') {
+                  const numValue = parseFloat(value);
+                  if (!isNaN(numValue)) {
+                    queryBuilder.andWhere(`entity.${key} = :${key}`, {
+                      [key]: numValue,
+                    });
+                  } else {
+                    throw new BadRequestException(
+                      `Invalid number format for field: ${key}`,
+                    );
+                  }
+                } else {
+                  throw new BadRequestException(
+                    `Invalid value type for number field: ${key}, expected string but got ${typeof value}`,
+                  );
+                }
+                break;
+
+              case 'date':
+              case 'datetime':
+              case 'timestamp':
+                // Para campos de fecha, usar comparación exacta de string
+                if (typeof value === 'string') {
+                  queryBuilder.andWhere(`entity.${key} = :${key}`, {
+                    [key]: value,
+                  });
+                } else {
+                  throw new BadRequestException(
+                    `Invalid value type for date field: ${key}, expected string but got ${typeof value}`,
+                  );
+                }
+                break;
+
+              default:
+                // Para otros tipos (text, varchar, etc.) usar ILIKE
                 queryBuilder.andWhere(`entity.${key} ILIKE :${key}`, {
+                  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                   [key]: `%${value}%`,
                 });
-              }
-            }
-            // Si el valor es un array, lo tratamos como IN
-            else if (Array.isArray(value)) {
-              if (value.length === 0) {
-                throw new BadRequestException(
-                  `Filter array cannot be empty for field: ${key}`,
-                );
-              }
-              queryBuilder.andWhere(`entity.${key} IN (:...${key})`, {
-                [key]: value,
-              });
-            }
-            // Si el valor es un objeto, lo tratamos como un filtro compuesto
-            else if (typeof value === 'object' && value !== null) {
-              queryBuilder.andWhere(`entity.${key} = :${key}`, {
-                [key]: value,
-              });
             }
           }
         });

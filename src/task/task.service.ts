@@ -129,7 +129,17 @@ export class TaskService {
         this.taskRepo,
         pagination,
         pagination.filters,
-        ['title', 'description'],
+        [
+          'title',
+          'description',
+          'status',
+          'priority',
+          'assignedTo',
+          'project',
+          'projectId',
+          'assignedToId',
+          'dueDate',
+        ],
         false,
       );
     } catch (error) {

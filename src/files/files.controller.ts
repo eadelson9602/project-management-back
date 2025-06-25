@@ -15,8 +15,10 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { fileNamer, fileDestination, fileFilter } from './helpers/';
 import { ConfigService } from '@nestjs/config';
+import { Auth } from '@/auth/decorators';
 
 @Controller('files')
+@Auth()
 export class FilesController {
   constructor(
     private readonly filesService: FilesService,

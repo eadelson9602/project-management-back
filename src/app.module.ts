@@ -8,6 +8,7 @@ import { ProjectModule } from './project/project.module';
 import { TaskModule } from './task/task.module';
 import { AuthModule } from './auth/auth.module';
 import { FilesModule } from './files/files.module';
+import { MessageWebsocketsModule } from './message-websockets/message-websockets.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { FilesModule } from './files/files.module';
     TaskModule,
     AuthModule,
     FilesModule,
+    MessageWebsocketsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

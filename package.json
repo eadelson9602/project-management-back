@@ -19,7 +19,11 @@
     "test": "jest --config jest.config.js",
     "test:unit": "jest --config jest.config.js --testPathPattern=/src/.*\\.spec.ts$",
     "test:integration": "jest --config jest.config.js --testPathPattern=/src/.*\\.integration.spec.ts$ || true",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "typeorm": "typeorm-ts-node-commonjs",
+    "typeorm:migration:generate": "node scripts/generate-migration.js",
+    "typeorm:migration:run": "node scripts/run-migrations.js",
+    "typeorm:migration:revert": "node scripts/revert-migration.js"
   },
   "dependencies": {
     "@nestjs/cli": "^11.0.0",
@@ -37,6 +41,7 @@
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
+    "dotenv": "^17.2.1",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "pg": "^8.16.0",

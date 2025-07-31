@@ -18,7 +18,7 @@ export class User {
   @Column()
   name: string;
 
-  @Column({ unique: true })
+  @Column({ unique: true, generated: 'uuid' })
   uid: string;
 
   @Column({ unique: true })

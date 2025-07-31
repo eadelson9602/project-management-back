@@ -8,11 +8,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
+import { DataSource, QueryFailedError, Repository } from 'typeorm';
 import { hashPassword } from './helpers/bcrypt.helper';
 import { PaginationDto } from '@/common/dto/pagination.dto';
 import { Not, IsNull } from 'typeorm';
 import { AdvancedSearchService } from '@/common/services/advanced-search.service';
+import { handleDBExceptions } from '@/helpers/handleDBExceptions';
 
 @Injectable()
 export class UsersService {
@@ -20,21 +21,40 @@ export class UsersService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly advancedSearchService: AdvancedSearchService,
+    private readonly dataSource: DataSource,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
+    const queryRunner = this.dataSource.createQueryRunner();
+
     try {
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+
       const passwordEncrypt: string = hashPassword(createUserDto.password);
 
-      const user: Partial<User> = this.userRepository.create({
+      const newUser = this.userRepository.create({
         ...createUserDto,
         password: passwordEncrypt,
       });
-      await this.userRepository.save(user);
-      return user;
-    } catch (error) {
-      console.error(error);
-      throw new InternalServerErrorException('Error creating user');
+
+      const savedUser = await queryRunner.manager.save(newUser);
+
+      await queryRunner.commitTransaction();
+
+      return savedUser;
+    } catch (error: unknown) {
+      // Devuelve los cambios realizados en la base de datos
+      await queryRunner.rollbackTransaction();
+
+      // Manejo específico de errores de base de datos
+      if (error instanceof QueryFailedError) {
+        handleDBExceptions(error as QueryFailedError);
+      }
+
+      throw new BadRequestException(error);
+    } finally {
+      await queryRunner.release();
     }
   }
 

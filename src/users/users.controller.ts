@@ -23,7 +23,6 @@ import { ValidRoles } from '@/auth/interfaces/valid-roles.interface';
 @ApiTags('users')
 @ApiBearerAuth()
 @Controller('users')
-@Auth()
 export class UserController {
   constructor(private readonly userService: UsersService) {}
 
@@ -35,6 +34,7 @@ export class UserController {
   }
 
   @Post()
+  @Auth()
   @ApiOperation({ summary: 'Listar usuarios con filtros avanzados' })
   @Auth(ValidRoles.ADMIN, ValidRoles.MANAGER)
   findAll(@Body() pagination: PaginationDto) {
@@ -42,6 +42,7 @@ export class UserController {
   }
 
   @Get('/find/:id')
+  @Auth()
   @ApiOperation({ summary: 'Obtener usuario por ID' })
   @ApiParam({ name: 'id', description: 'ID del usuario' })
   findOne(@Param('id') id: string) {
@@ -49,6 +50,7 @@ export class UserController {
   }
 
   @Patch('/update/')
+  @Auth()
   @ApiOperation({ summary: 'Actualizar usuario' })
   @ApiParam({ name: 'id', description: 'ID del usuario' })
   @ApiBody({ type: UpdateUserDto })
@@ -57,9 +59,9 @@ export class UserController {
   }
 
   @Delete('/delete/:id')
+  @Auth(ValidRoles.ADMIN)
   @ApiOperation({ summary: 'Eliminar usuario' })
   @ApiParam({ name: 'id', description: 'ID del usuario' })
-  @Auth(ValidRoles.ADMIN, ValidRoles.MANAGER)
   remove(@Param('id') id: string) {
     return this.userService.remove(id);
   }
